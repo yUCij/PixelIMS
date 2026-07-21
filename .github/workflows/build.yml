@@ -19,35 +19,20 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
         
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
-      
-    - name: Cache Gradle packages
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
+    # The official Gradle action automatically handles caching and setup
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
           
-    - name: Install Gradle
-      run: |
-        wget https://services.gradle.org/distributions/gradle-8.9-bin.zip
-        unzip -q gradle-8.9-bin.zip
-        export PATH=$PATH:$PWD/gradle-8.9/bin
-        gradle --version
+    - name: Make gradlew executable
+      run: chmod +x ./gradlew
         
     - name: Build with Gradle
-      run: |
-        export PATH=$PATH:$PWD/gradle-8.9/bin
-        cd $GITHUB_WORKSPACE
-        gradle assembleRelease --stacktrace --no-daemon
+      run: ./gradlew assembleRelease --stacktrace --no-daemon
       
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: PixelIMS-release
-        path: app/build/outputs/apk/release/*.apk
+        # Note: Depending on signing config, it might be named app-release-unsigned.apk
+        path: app/build/outputs/apk/release/*.apk 
         if-no-files-found: error
