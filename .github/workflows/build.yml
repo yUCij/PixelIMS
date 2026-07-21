@@ -30,11 +30,22 @@ jobs:
       run: | 
         sed -i 's/create("libs")/create("libsci")/g' settings.gradle.kts
 
-        # Patch removed Shizuku method (onRequestPermissionsResult removed in v13)
-        sed -i 's/Shizuku.onRequestPermissionsResult(requestCode, permissions, grantResults)/false/g' app/src/main/java/io/github/pixelims/MainActivity.java
+        # 4. Remove NonNull entirely to avoid AndroidX classpath resolution errors
+        find app/src/main/java -name "*.java" -exec perl -pi -e 's/import (android|androidx)\.annotation\.NonNull;//g' {} +
+        find app/src/main/java -name "*.java" -exec perl -pi -e 's/\@NonNull//g' {} +
 
-        # Replace restricted android.annotation.NonNull with standard AndroidX annotation
-        find app/src/main/java -name "*.java" -exec sed -i 's/import android.annotation.NonNull;/import androidx.annotation.NonNull;/g' {} +
+        # 5. Patch removed Shizuku method (onRequestPermissionsResult removed in v13)
+        find app/src/main/java -name "*.java" -exec perl -pi -e 's/Shizuku\.onRequestPermissionsResult\(.*?\)/false/g' {} +
+
+        # 6. FORCE the stub module into the Java bootclasspath
+        # This guarantees the compiler sees your hidden APIs (PermissionManager, etc.) instead of Android 15's restricted ones
+        cat << 'EOF' >> app/build.gradle.kts
+        
+        tasks.withType<JavaCompile>().configureEach {
+            val stubJar = rootProject.file("stub/build/intermediates/compile_library_classes_jar/release/classes.jar")
+            options.compilerArgs.add("-Xbootclasspath/p:${stubJar.absolutePath}")
+        }
+        EOF
         
     # Notice we are using 'gradle' instead of './gradlew'
     - name: Build with Gradle
