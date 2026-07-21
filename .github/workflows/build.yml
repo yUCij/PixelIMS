@@ -27,7 +27,7 @@ jobs:
 
     # Dynamically fixes the version catalog error without permanently modifying the code
     - name: CI Workaround for settings.gradle.kts
-      run: sed -i 's/create("libs")/create("libs_ci")/g' settings.gradle.kts
+      run: sed -i 's/create("libs")/create("libsci")/g' settings.gradle.kts
         
     # Notice we are using 'gradle' instead of './gradlew'
     - name: Build with Gradle
