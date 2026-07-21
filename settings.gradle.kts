@@ -11,7 +11,7 @@ pluginManagement {
         gradlePluginPortal()
     }
     plugins {
-        val agp = "8.7.0"
+        val agp = "8.1.1"
         id("com.android.application") version agp
         id("com.android.library") version agp
     }
