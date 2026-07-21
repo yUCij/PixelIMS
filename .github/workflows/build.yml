@@ -27,7 +27,14 @@ jobs:
 
     # Dynamically fixes the version catalog error without permanently modifying the code
     - name: CI Workaround for settings.gradle.kts
-      run: sed -i 's/create("libs")/create("libsci")/g' settings.gradle.kts
+      run: | 
+        sed -i 's/create("libs")/create("libsci")/g' settings.gradle.kts
+
+        # Patch removed Shizuku method (onRequestPermissionsResult removed in v13)
+        sed -i 's/Shizuku.onRequestPermissionsResult(requestCode, permissions, grantResults)/false/g' app/src/main/java/io/github/pixelims/MainActivity.java
+
+        # Replace restricted android.annotation.NonNull with standard AndroidX annotation
+        find app/src/main/java -name "*.java" -exec sed -i 's/import android.annotation.NonNull;/import androidx.annotation.NonNull;/g' {} +
         
     # Notice we are using 'gradle' instead of './gradlew'
     - name: Build with Gradle
