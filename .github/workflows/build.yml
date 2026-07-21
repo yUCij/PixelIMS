@@ -19,20 +19,19 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
         
-    # The official Gradle action automatically handles caching and setup
+    # This officially installs Gradle 8.9 and adds it to the PATH
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v3
-          
-    - name: Make gradlew executable
-      run: chmod +x ./gradlew
+      uses: gradle/actions/setup-gradle@v4
+      with:
+        gradle-version: '8.9'
         
+    # Notice we are using 'gradle' instead of './gradlew'
     - name: Build with Gradle
-      run: ./gradlew assembleRelease --stacktrace --no-daemon
+      run: gradle assembleRelease --stacktrace --no-daemon
       
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: PixelIMS-release
-        # Note: Depending on signing config, it might be named app-release-unsigned.apk
-        path: app/build/outputs/apk/release/*.apk 
+        path: app/build/outputs/apk/release/*.apk
         if-no-files-found: error
